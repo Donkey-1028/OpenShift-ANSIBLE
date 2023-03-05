@@ -1,0 +1,30 @@
+---
+- name: Delete OpenShift Config Directory
+  file:
+    path: "{{ openshift_config_directory }}/install_dir"
+    state: absent
+
+- name: Delete Install Config
+  file:
+    path: "{{ openshift_config_directory }}/install-config.yaml"
+    state: absent
+
+- name: Delete Web Server Ignition Config files
+  file:
+    path: "/var/www/html/ocp4/{{ item }}"
+    state: absent
+  loop:
+    - master.ign
+    - worker.ign
+    - bootstrap.ign
+  notify: "Restart httpd"
+  
+- name: Delete kube config, cache
+  file:
+    path: ~/.kube
+    state: absent
+
+- name: Delete SSH History
+  file:
+    path: ~/.ssh/known_hosts
+    state: absent

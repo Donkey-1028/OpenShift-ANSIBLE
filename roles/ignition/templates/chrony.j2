@@ -1,0 +1,28 @@
+variant: openshift
+version: {{ openshift_version  }}
+metadata:
+  name: 99-{{ item }}-chrony
+  labels:
+    machineconfiguration.openshift.io/role: {{ item }}
+storage:
+  files:
+  - path: /etc/chrony.conf
+    mode: 0644
+    overwrite: true
+    contents:
+      inline: |
+{% for server in chrony_server %}
+        server {{ server }} iburst
+{% endfor %}
+        stratumweight 0
+        driftfile /var/lib/chrony/drift
+        rtcsync
+        makestep 10 3
+        bindcmdaddress 127.0.0.1
+        bindcmdaddress ::1
+        keyfile /etc/chrony.keys
+        commandkey 1
+        generatecommandkey
+        noclientlog
+        logchange 0.5
+        logdir /var/log/chrony

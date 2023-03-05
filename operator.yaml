@@ -1,0 +1,20 @@
+---
+- name: openShift configure after install
+  hosts: bastion
+  vars_files:
+    - vars/ignition.yaml
+    - vars/openshift.yaml
+    - vars/node.yaml
+
+  pre_tasks:
+    - name: openshift login htpasswd account
+      shell: "/usr/local/bin/oc login -u {{ openshift_admin[0]['name'] }} -p {{ openshift_admin[0]['password'] }}"
+
+  roles:
+          #    - operator/elasticsearch
+    - operator/openshift-logging
+
+  post_tasks:
+    - name: oc logout
+      shell: /usr/local/bin/oc logout
+

@@ -1,0 +1,25 @@
+---
+- name: create elasticsearch operator config directory
+  file:
+    path: "{{ openshift_config_directory }}/elasticsearch-operator"
+    recurse: yes
+    state: directory
+
+- name: copy elasticsearch operator config
+  copy:
+    src: "files/{{ item }}"
+    dest: "{{ openshift_config_directory }}/elasticsearch-operator/{{ item }}"
+  loop:
+    - elasticsearch-sub.yaml
+    - openshift-operators-redhat.yaml
+
+- name: create elasticsearch operator namespace
+  shell: /usr/local/bin/kubectl create namespace openshift-operators-redhat
+  ignore_errors: yes
+
+- name: install elasticsearch operator
+  shell: "/usr/local/bin/oc create -f {{ openshift_config_directory }}/elasticsearch-operator/{{ item }}"
+  loop:
+    - elasticsearch-sub.yaml
+    - openshift-operators-redhat.yaml
+

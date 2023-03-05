@@ -1,0 +1,80 @@
+---
+- name: Copy identitiy providers yaml file
+  copy:
+    src: files/htpasswd.yaml
+    dest: "{{ openshift_config_directory }}"
+
+- name: create htpasswd file
+  shell: "touch {{ openshift_config_directory }}/ocp.htpasswd"
+
+- name: create admin user
+  shell: "htpasswd -B -b {{ openshift_config_directory }}/ocp.htpasswd {{ item.name }} {{ item.password }}"
+  loop: "{{ openshift_admin }}"
+
+- name: create common user
+  shell: "htpasswd -B -b {{ openshift_config_directory }}/ocp.htpasswd {{ item.name }} {{ item.password }}"
+  loop: "{{ openshift_user }}"
+
+- name: create openshift htpasswd secret
+  shell: "/usr/local/bin/oc create secret generic htpass-secret --from-file=htpasswd={{ openshift_config_directory }}/ocp.htpasswd -n openshift-config"
+  ignore_errors: yes
+
+- name: openshift config identity providers
+  shell: /usr/local/bin/oc apply -f htpasswd.yaml
+  args:
+    chdir: "{{ openshift_config_directory }}"
+
+- name: openshift add cluster role admin user
+  shell: "/usr/local/bin/oc adm policy add-cluster-role-to-user cluster-admin {{ item.name }}"
+  loop: "{{ openshift_admin }}"
+
+- name: create registry directory
+  file:
+    path: "{{ nfs_mount_dir }}/registry"
+    mode: 0777
+    owner: nobody
+    group: nobody
+    state: directory
+  when: nfs
+
+- name: create registry pv yaml file
+  template:
+    src: registry_pv.j2
+    dest: "{{ openshift_config_directory }}/registry_pv.yaml"
+  when: image_registry_nfs_server_pv
+
+- name: create registry pv
+  shell: /usr/local/bin/oc create -f registry_pv.yaml
+  args:
+    chdir: "{{ openshift_config_directory }}"
+  when: image_registry_nfs_server_pv
+  ignore_errors: yes
+
+- name: copy registry pvc yaml file
+  copy:
+    src: files/pvc.yaml
+    dest: "{{ openshift_config_directory }}/registry_pvc.yaml"
+  when: image_registry_nfs_server_pv
+  ignore_errors: yes
+
+- name: create registry pvc
+  shell: /usr/local/bin/oc create -f registry_pvc.yaml
+  args:
+    chdir: "{{ openshift_config_directory }}"
+  when: image_registry_nfs_server_pv
+
+- name: copy image registry operator config yaml file
+  template:
+    src: config_image_registry_operator.j2
+    dest: "{{ openshift_config_directory }}/config_image_registry_operator.yaml"
+  when: image_registry_nfs_server_pv
+
+- name: configure openshift image registry operator
+  shell: /usr/local/bin/oc apply -f config_image_registry_operator.yaml
+  args:
+    chdir: "{{ openshift_config_directory }}"
+  when: image_registry_nfs_server_pv
+
+- name: expose image registry
+  shell: /usr/local/bin/oc patch configs.imageregistry.operator.openshift.io/cluster --patch '{"spec":{"defaultRoute":true}}' --type=merge 
+  when: image_registry_expose

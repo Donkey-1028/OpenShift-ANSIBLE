@@ -1,0 +1,21 @@
+variant: openshift
+version: {{ openshift_version  }}
+metadata:
+  name: 99-{{ item }}-timezone
+  labels:
+    machineconfiguration.openshift.io/role: {{ item }}
+systemd:
+  units:
+    - name: custom-timezone.service
+      contents: |
+        [Unit]
+        Description=set timezone
+        After=network-online.target
+
+        [Service]
+        Type=oneshot
+        ExecStart=timedatectl set-timezone {{ timezone }}
+
+        [Install]
+        WantedBy=multi-user.target
+      enabled: true

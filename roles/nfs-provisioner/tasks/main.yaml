@@ -1,0 +1,38 @@
+---
+- name: nfs-provisioner Config Directory
+  file:
+    path: "{{ openshift_config_directory }}/nfs-provisioner"
+    recurse: yes
+    state: directory
+
+- name: Copy deployment yaml
+  template:
+    src: deployment.j2
+    dest: "{{ openshift_config_directory }}/nfs-provisioner/deployment.yaml"
+
+- name: Copy rbac yaml
+  template:
+    src: rbac.j2
+    dest: "{{ openshift_config_directory }}/nfs-provisioner/rbac.yaml"
+
+- name: Copy storage class yaml
+  copy:
+    src: files/class.yaml
+    dest: "{{ openshift_config_directory }}/nfs-provisioner/class.yaml"
+
+- name: create nfs-provisioner namespace
+  shell: /usr/local/bin/oc create namespace nfs-provisioner
+
+- name: add hostmount-anyuid to default service account
+  shell: "/usr/local/bin/oc adm policy add-scc-to-user hostmount-anyuid system:serviceaccount:{{ nfs_provisioner_namespace  }}:nfs-client-provisioner"
+
+- name: deploy nfs provisioner
+  shell: "/usr/local/bin/oc create -f {{ item  }}"
+  loop:
+    - "{{ openshift_config_directory }}/nfs-provisioner/rbac.yaml"
+    - "{{ openshift_config_directory }}/nfs-provisioner/class.yaml"
+    - "{{ openshift_config_directory }}/nfs-provisioner/deployment.yaml"
+
+- name: add hostmount-anyuid to default service account
+  shell: >-
+          /usr/local/bin/oc patch sc managed-nfs-storage -p '{"metadata":{"annotations": {"storageclass.kubernetes.io/is-default-class":"true"}}}'

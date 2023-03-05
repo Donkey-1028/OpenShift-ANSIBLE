@@ -1,0 +1,4 @@
+## nfs
+nfs_allow_ip : 192.168.0.0/16
+nfs_allow_mod: rw,sync,no_root_squash
+nfs_mount_dir: "{{ root_dir }}/nfsshare"

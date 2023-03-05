@@ -1,0 +1,5 @@
+openmaru_sys_agent_deploy_master: true
+openmaru_sys_agent_namespace: openmaru-apm
+openmaru_sys_agent_image: registry.ocp.buahn.local:5000/openmaru/openmaru-sys-agent-crio:5.1.0-8.3
+openmaru_apm_host: 192.168.60.20
+openmaru_apm_port: 80

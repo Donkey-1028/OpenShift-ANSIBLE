@@ -1,0 +1,8 @@
+---
+- name: Clean Up ignition files and config 
+  hosts: bastion
+  vars_files:
+    - vars/node.yaml
+    - vars/ignition.yaml
+  roles:
+    - role: clean_ignition

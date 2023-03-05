@@ -1,0 +1,5 @@
+---
+- name: Restart nfs-server
+  service:
+    name: nfs-server
+    state: restarted

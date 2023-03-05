@@ -1,0 +1,32 @@
+# image registry svc expose
+image_registry_expose: true
+
+# nfs image registry pv server
+image_registry_nfs_server_pv: true
+nfs_server: 192.168.60.12
+nfs_mount_dir: /data/nfsshare
+
+## if you want to add openshift cluster user
+## write this format
+## admin user
+# openshift_admin: 
+#   - name: admin
+#     password: opennaru
+#   - name: root
+#     password: openmaru
+## common user
+# openshift_user:
+#   - name: buahn
+#     password: opennaru
+#   - name: user2
+#     password: openmaru
+openshift_admin: 
+  - name: admin
+    password: opennaru
+  - name: opennaru
+    password: opennaru
+
+openshift_user:
+  - name: guest
+    password: openmaru
+

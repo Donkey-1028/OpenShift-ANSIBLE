@@ -1,0 +1,16 @@
+---
+- name: Configure OPENSHIFT Bastion
+  hosts: bastion
+  vars_files:
+    - vars/env.yaml
+    - vars/node.yaml
+    - vars/httpd.yaml
+    - vars/nfs.yaml
+    - vars/ignition.yaml
+  roles:
+          #    - role: bastion
+          #    - role: httpd
+    - role: haproxy
+          #    - role: nfs
+          #    - role: dns
+          #    - role: ignition

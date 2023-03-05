@@ -1,0 +1,76 @@
+---
+- name: infra node machine config pool yaml copy
+  copy:
+    src: files/infra-node-machineconfigpool.yaml
+    dest: "{{ openshift_config_directory }}/infra-node-machineconfigpool.yaml"
+
+- name: infra node machine config pool add
+  shell: "/usr/local/bin/oc create -f {{ openshift_config_directory }}/infra-node-machineconfigpool.yaml"
+  ignore_errors: true
+
+- name: infra node label add
+  shell: "/usr/local/bin/oc label node {{ item }}.{{ sub_domain }}.{{ domain }}.{{ TLD }} node-role.kubernetes.io/infra="
+  with_items: "{{ infra_node_name_prefix }}"
+
+- name: infra node delete worker label
+  shell: "/usr/local/bin/oc label node {{ item }}.{{ sub_domain }}.{{ domain }}.{{ TLD }} node-role.kubernetes.io/worker-"
+  with_items: "{{ infra_node_name_prefix }}"
+
+- name: infra node taint add
+  shell: /usr/local/bin/oc adm taint nodes -l node-role.kubernetes.io/infra infra=reserved:NoSchedule infra=reserved:NoExecute
+
+- name: image registry move to infra node
+  shell: >-
+          /usr/local/bin/oc patch configs.imageregistry.operator.openshift.io/cluster --type=merge -p '{"spec":{"nodeSelector": {"node-role.kubernetes.io/infra": ""},"tolerations": [{"effect":"NoSchedule","key": "infra","value": "reserved"},{"effect":"NoExecute","key": "infra","value": "reserved"}]}}'
+
+- name: system monitoring stack configmap copy
+  copy:
+    src: files/cluster-monitoring-configmap.yaml
+    dest: "{{ openshift_config_directory }}/cluster-monitoring-configmap.yaml"
+  ignore_errors: true
+
+- name: system monitoring stack move to infra node
+  shell: "/usr/local/bin/oc create -f {{ openshift_config_directory }}/cluster-monitoring-configmap.yaml"
+  ignore_errors: true
+
+- name: router move to infra node
+  shell: >-
+          /usr/local/bin/oc patch ingresscontroller/default -n  openshift-ingress-operator  --type=merge -p '{"spec":{"nodePlacement": {"nodeSelector": {"matchLabels": {"node-role.kubernetes.io/infra": ""}},"tolerations": [{"effect":"NoSchedule","key": "infra","value": "reserved"},{"effect":"NoExecute","key": "infra","value": "reserved"}]}}}'
+
+- name: router pod replicas set infra node count
+  shell: >-
+          /usr/local/bin/oc patch -n openshift-ingress-operator ingresscontroller/default --patch '{"spec":{"replicas": {{ infra|length}} }}' --type=merge
+
+- name: disable api server bootstrap node
+  lineinfile:
+    path: /etc/haproxy/haproxy.cfg
+    regexp: '^    server bootstrap {{ bootstrap }}:6443 check'
+    line: '#    server bootstrap {{ bootstrap }}:6443 check'
+    state: present
+
+- name: disable machine config bootstrap node
+  lineinfile:
+    path: /etc/haproxy/haproxy.cfg
+    regexp: '^    server bootstrap {{ bootstrap }}:22623 check'
+    line: '#    server bootstrap {{ bootstrap }}:22623 check'
+    state: present
+
+- name: disable worker node http routing
+  lineinfile:
+    path: /etc/haproxy/haproxy.cfg
+    regexp: '^    server worker-{{ index+1 }} {{ worker[index] }}:80 check inter 1s'
+    state: absent
+  loop: "{{ worker }}"
+  loop_control:
+    index_var: index
+
+- name: disable worker node https routing
+  lineinfile:
+    path: /etc/haproxy/haproxy.cfg
+    regexp: '^    server worker-{{ index+1 }} {{ worker[index] }}:443 check inter 1s'
+    state: absent
+  loop: "{{ worker }}"
+  loop_control:
+    index_var: index
+  notify:
+  - Restart haproxy

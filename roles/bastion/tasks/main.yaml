@@ -1,0 +1,31 @@
+---
+- name: Configure Firewalld
+  service:
+    name: firewalld
+    state: stopped
+    enabled: false 
+
+- name: Configure /etc/hosts
+  lineinfile:
+    path: /etc/hosts
+    line: "{{ bastion }} bastion console-openshift-console.apps.{{ sub_domain }}.{{ domain }}.{{ TLD }} oauth-openshift.apps.{{ sub_domain }}.{{ domain }}.{{ TLD }}"
+  when: poc
+
+- name: Make OpenShift Root Directory
+  file:
+    path: "{{ root_dir }}"
+    state: directory
+
+- name: Configure SELinux
+  selinux:
+    state: disabled
+
+- name: Configure Hostname
+  hostname:
+    name: "bastion.{{ sub_domain }}.{{ domain }}.{{ TLD }}"
+
+- name: Install Podman
+  yum:
+    name: podman
+    state: present
+

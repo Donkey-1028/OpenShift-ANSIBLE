@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: openmaru-sys-agent
+  namespace: {{ openmaru_sys_agent_namespace }}
+  labels:
+    app: openmaru-sys-agent
+spec:
+  selector:
+    matchLabels:
+      app: openmaru-sys-agent
+  template:
+    metadata:
+      labels:
+        app: openmaru-sys-agent
+    spec:
+      schedulerName: default-scheduler
+      nodeSelector:
+        kubernetes.io/os: linux
+      tolerations:
+        - operator: Exists
+      restartPolicy: Always
+      containers:
+        - name: openmaru-sys-agent
+          image: {{ openmaru_sys_agent_image }}
+          imagePullPolicy: Always
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              memory: 256Mi
+              cpu: 150m
+            limits:
+              memory: 1024Mi
+              cpu: 300m
+          env:
+            - name: KHAN_HOST
+              value: "{{ openmaru_apm_host }}"
+            - name: KHAN_PORT
+              value: "{{ openmaru_apm_port }}"
+            - name: TZ
+              value: "Asia/Seoul"
+          volumeMounts:
+            - name: host-proc
+              mountPath: /hostfs/proc
+              readOnly: true
+            - name: host-var-crio
+              mountPath: /hostfs/var/run/crio
+            - name: host-var-containers
+              mountPath: /hostfs/var/run/containers
+              readOnly: true
+            - name: host-sys
+              mountPath: /hostfs/sys
+              readOnly: true
+            - name: host-dev
+              mountPath: /hostfs/dev
+              readOnly: true
+            - name: host-redhat-release
+              mountPath: /hostfs/etc/redhat-release
+              readOnly: true
+            - name: host-sysroot
+              mountPath: /hostfs/sysroot
+              readOnly: true
+              #            - name: host-rhelroot
+              #              mountPath: /hostfs/rhelroot
+              #              readOnly: true
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 30
+      hostNetwork: true
+      hostPID: true
+      volumes:
+        - name: host-proc
+          hostPath:
+            path: /proc
+        - name: host-var-crio
+          hostPath:
+            path: /var/run/crio
+        - name: host-var-containers
+          hostPath:
+            path: /var/run/containers
+        - name: host-sys
+          hostPath:
+            path: /sys
+        - name: host-dev
+          hostPath:
+            path: /dev
+        - name: host-redhat-release
+          hostPath:
+            path: /etc/redhat-release
+        - name: host-sysroot
+          hostPath:
+            path: /sysroot
+            #        - name: host-rhelroot
+            #          hostPath:
+            #            path: /
+

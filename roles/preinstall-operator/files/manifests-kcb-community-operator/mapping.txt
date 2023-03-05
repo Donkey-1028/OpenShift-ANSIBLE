@@ -1,0 +1,15 @@
+quay.io/3scale/3scale210:zync-3scale-2.10.0-GA=registry.buahn.ocp.com:5000/operatorhub410/commnunity-operator-3scale-3scale210:zync-3scale-2.10.0-GA
+quay.io/openshift-community-operators/3scale-community-operator@sha256:02ae7ddf5ed499133ab9a2ff0a6b84a2507e443ac10f967c10ba1dc8d9114dc3=registry.buahn.ocp.com:5000/operatorhub410/commnunity-operator-openshift-community-operators-3scale-community-operator:945b29be
+registry.buahn.ocp.com:5000/operatorhub/kcb-community-operator-index:v4.10=registry.buahn.ocp.com:5000/operatorhub410/commnunity-operator-operatorhub-kcb-community-operator-index:v4.10
+quay.io/3scale/3scale-operator:v0.7.0=registry.buahn.ocp.com:5000/operatorhub410/commnunity-operator-3scale-3scale-operator:v0.7.0
+docker.io/library/memcached:1.5=registry.buahn.ocp.com:5000/operatorhub410/commnunity-operator-library-memcached:1.5
+quay.io/openshift-community-operators/3scale-community-operator@sha256:f5b66f645165aa0e4d47623bc1ffd5dbdee660417fa48118c7c157f0e400dc7f=registry.buahn.ocp.com:5000/operatorhub410/commnunity-operator-openshift-community-operators-3scale-community-operator:a3c05980
+quay.io/openshift-community-operators/3scale-community-operator@sha256:cbde98556850c3c4bc232c9b36f97c4fddf7178e7b2cc67d57c714477b46de02=registry.buahn.ocp.com:5000/operatorhub410/commnunity-operator-openshift-community-operators-3scale-community-operator:1d655bd1
+docker.io/centos/postgresql-10-centos7:latest=registry.buahn.ocp.com:5000/operatorhub410/commnunity-operator-centos-postgresql-10-centos7:latest
+quay.io/3scale/3scale-operator:v0.8.2=registry.buahn.ocp.com:5000/operatorhub410/commnunity-operator-3scale-3scale-operator:v0.8.2
+docker.io/centos/mysql-57-centos7:latest=registry.buahn.ocp.com:5000/operatorhub410/commnunity-operator-centos-mysql-57-centos7:latest
+quay.io/3scale/3scale210:apicast-3scale-2.10.0-GA=registry.buahn.ocp.com:5000/operatorhub410/commnunity-operator-3scale-3scale210:apicast-3scale-2.10.0-GA
+quay.io/3scale/3scale-operator:v0.9.0=registry.buahn.ocp.com:5000/operatorhub410/commnunity-operator-3scale-3scale-operator:v0.9.0
+quay.io/3scale/3scale210:apisonator-3scale-2.10.0-GA=registry.buahn.ocp.com:5000/operatorhub410/commnunity-operator-3scale-3scale210:apisonator-3scale-2.10.0-GA
+quay.io/3scale/3scale210:porta-3scale-2.10.0-GA=registry.buahn.ocp.com:5000/operatorhub410/commnunity-operator-3scale-3scale210:porta-3scale-2.10.0-GA
+docker.io/centos/redis-32-centos7:latest=registry.buahn.ocp.com:5000/operatorhub410/commnunity-operator-centos-redis-32-centos7:latest

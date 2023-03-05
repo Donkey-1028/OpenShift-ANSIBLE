@@ -1,0 +1,10 @@
+apiVersion: machineconfiguration.openshift.io/v1
+kind: KubeletConfig
+metadata:
+  name: container-log-max-size
+spec:
+  machineConfigPoolSelector:
+    matchLabels:
+      machineconfiguration.openshift.io/mco-built-in: ""
+  kubeletConfig:
+    containerLogMaxSize: {{ container_log_max_size }}

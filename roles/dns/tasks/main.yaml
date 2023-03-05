@@ -1,0 +1,41 @@
+---
+- name: Install bind, bind-utils
+  yum:
+     name:
+       - bind
+       - bind-utils
+     state: present 
+  when: dns
+
+- name: Copy Template /etc/named.conf
+  template:
+    src: templates/named.conf.j2
+    dest: /etc/named.conf
+  when: dns
+     
+- name: Copy Template /etc/named.rfc1912.zones
+  template:
+    src: templates/named.rfc1912.zones.j2
+    dest: /etc/named.rfc1912.zones
+  when: dns
+
+- name: Copy Template /var/named/{{ sub_domain  }}.{{ domain  }}.{{ TLD  }}.zone
+  template:
+    src: templates/named.zone.j2
+    dest: /var/named/{{ sub_domain  }}.{{ domain  }}.{{ TLD  }}.zone
+    mode: 0644
+  when: dns
+
+- name: Copy Template /var/named/{{ sub_domain  }}.{{ domain  }}.{{ TLD  }}.rev
+  template:
+    src: templates/named.rev.j2
+    dest: /var/named/{{ sub_domain  }}.{{ domain  }}.{{ TLD  }}.rev
+    mode: 0644
+  when: dns
+
+- name: Enable And Start named
+  service:
+    name: named
+    state: started
+    enabled: true
+  when: dns

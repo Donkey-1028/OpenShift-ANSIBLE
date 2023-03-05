@@ -1,0 +1,34 @@
+---
+- name: Install nfs-utils
+  yum:
+    name: nfs-utils
+    state: present
+
+- name: Make /etc/exports
+  file:
+    path: /etc/exports
+    state: file
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Configure /etc/exports
+  lineinfile:
+    path: /etc/exports
+    line: "{{ nfs_mount_dir }} {{ nfs_allow_ip }}({{ nfs_allow_mod  }})"
+     
+- name: Make NFS mount point
+  file:
+    path: '{{ nfs_mount_dir }}'
+    state: directory
+    mode: 0777
+    owner: nobody
+    group: nobody
+  notify: Restart nfs-server
+
+- name: Configure nfs-server
+  service:
+    name: nfs-server
+    state: started
+    enabled: true
+

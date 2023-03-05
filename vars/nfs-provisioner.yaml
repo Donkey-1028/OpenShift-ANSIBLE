@@ -1,0 +1,10 @@
+# openshift nfs provisioner namespace
+nfs_provisioner_namespace: nfs-provisioner
+
+# nfs server ip
+nfs_server: 192.168.60.12
+
+# nfs server directory path
+nfs_server_path: /data/nfsshare
+
+nfs_provisioner_image: k8s.gcr.io/sig-storage/nfs-subdir-external-provisioner:v4.0.2

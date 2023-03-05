@@ -1,0 +1,12 @@
+---
+apiVersion: operator.openshift.io/v1alpha1
+kind: ImageContentSourcePolicy
+metadata:
+  labels:
+    operators.openshift.org/catalog: "true"
+  name: kcb-community-operator-index-0
+spec:
+  repositoryDigestMirrors:
+  - mirrors:
+    - registry.buahn.ocp.com:5000/operatorhub410/commnunity-operator-openshift-community-operators-3scale-community-operator
+    source: quay.io/openshift-community-operators/3scale-community-operator

@@ -1,0 +1,6 @@
+---
+- name: run coreos installer
+  shell: "coreos-installer install --copy-network /dev/sda --ignition-url http://{{ bastion }}:{{ httpd_port }}/ocp4/{{ node }}.ign --insecure-ignition"
+
+- name: reboot
+  reboot:

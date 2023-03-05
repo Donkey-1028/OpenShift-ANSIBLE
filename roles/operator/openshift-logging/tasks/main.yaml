@@ -1,0 +1,41 @@
+---
+- name: openshift image registry login
+  shell: "podman login -u '$(/usr/local/bin/oc whoami)' -p $(/usr/local/bin/oc whoami -t) default-route-openshift-image-registry.apps.{{ sub_domain }}.{{ domain }}.{{ TLD }}"
+
+- name: podman load oauth proxy image
+  shell: "podman load -i {{ role_path }}/files/ose-oauth-proxy-v4.4.image.tar"
+
+- name: podman tag oauth proxy image
+  shell: "podman tag registry.redhat.io/openshift4/ose-oauth-proxy:v4.4 default-route-openshift-image-registry.apps.{{ sub_domain }}.{{ domain }}.{{ TLD }}/openshift/oauth-proxy:v4.4"
+
+- name: podman push oauth proxy image
+  shell: "podman push default-route-openshift-image-registry.apps.{{ sub_domain }}.{{ domain }}.{{ TLD }}/openshift/oauth-proxy:v4.4"
+
+  #- name: create elasticsearch operator config directory
+  #  file:
+  #    path: "{{ openshift_config_directory }}/openshift-logging-operator"
+  #    recurse: yes
+  #    state: directory
+  #
+  #- name: copy openshift-logging operator config
+  #  copy:
+  #    src: "files/{{ item }}"
+  #    dest: "{{ openshift_config_directory }}/openshift-logging-operator/{{ item }}"
+  #  loop:
+  #    - logging-sub.yaml
+  #    - openshift-logging.yaml
+  #    - instance.yaml
+  #
+  #- name: create elasticsearch operator namespace
+  #  shell: /usr/local/bin/kubectl create namespace openshift-logging
+  #  ignore_errors: yes
+  #
+  #- name: install openshift-logging operator
+  #  shell: "/usr/local/bin/oc create -f {{ openshift_config_directory }}/openshift-logging-operator/{{ item }}"
+  #  loop:
+  #    - logging-sub.yaml
+  #    - openshift-logging.yaml
+  #    - instance.yaml
+  #
+  #- name: openshift image registry logout
+  #  shell: podman logout 

@@ -1,0 +1,4 @@
+infra_node_name_prefix:
+  - infra-1
+  - infra-2
+  - infra-3

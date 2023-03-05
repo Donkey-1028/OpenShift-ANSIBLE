@@ -1,0 +1,47 @@
+## OpenShift Node IP
+# Bastion IP
+# Don't Write "localhost"
+bastion: 192.168.60.12
+
+# Bootstrap IP
+bootstrap: 192.168.60.110
+
+# Bootstrap Disk
+bootstrap_node_blk: /dev/sda
+
+# Master Node IP
+master:
+  - 192.168.60.101
+  - 192.168.60.102
+  - 192.168.60.103
+
+# Master Disk
+master_node_blk: /dev/sda
+
+# Infra Node IP
+infra:
+  - 192.168.60.104
+  - 192.168.60.105
+  - 192.168.60.106
+
+# Infra Disk
+infra_node_blk: /dev/sda
+
+# Worker Node IP
+worker:
+  - 192.168.60.107
+  - 192.168.60.108
+  - 192.168.60.109
+
+# Write Infra Disk
+worker_node_blk: /dev/sda
+
+## OpenShift Domain Name
+# example : ocp.domain.local
+sub_domain: ocp
+domain: buahn
+TLD: local
+
+## before_install role
+# openshift files root directory
+root_dir: /data

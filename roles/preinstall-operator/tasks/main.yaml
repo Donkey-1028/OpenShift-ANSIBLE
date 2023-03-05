@@ -1,0 +1,40 @@
+---
+- name: disable default oeprator hub
+  shell: >-
+          /usr/local/bin/oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
+
+- name: create community operator directory
+  copy:
+    src: files/manifests-kcb-community-operator
+    dest: "{{ openshift_config_directory }}"
+    directory_mode: true
+
+- name: community operator registry url modify
+  shell: sed -i 's/{{ origin_mirror_registry_url }}/{{ mirror_registry_url }}/g' "{{ openshift_config_directory }}/manifests-kcb-community-operator/{{ item }}"
+  loop:
+    - catalogSource.yaml
+    - imageContentSourcePolicy.yaml
+
+- name: create community operator deploy
+  shell: "/usr/local/bin/oc create -f {{ openshift_config_directory }}/manifests-kcb-community-operator/{{ item }}"
+  loop:
+    - catalogSource.yaml
+    - imageContentSourcePolicy.yaml
+
+- name: create redhat operator directory
+  copy:
+    src: files/manifests-kcb-redhat-operator
+    dest: "{{ openshift_config_directory }}"
+    directory_mode: true
+
+- name: redhat operator registry url modify
+  shell: sed -i 's/{{ origin_mirror_registry_url }}/{{ mirror_registry_url }}/g' "{{ openshift_config_directory }}/manifests-kcb-redhat-operator/{{ item }}"
+  loop:
+    - catalogSource.yaml
+    - imageContentSourcePolicy.yaml
+
+- name: create redhat operator deploy
+  shell: "/usr/local/bin/oc create -f {{ openshift_config_directory }}/manifests-kcb-redhat-operator/{{ item }}"
+  loop:
+    - catalogSource.yaml
+    - imageContentSourcePolicy.yaml

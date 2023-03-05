@@ -1,0 +1,33 @@
+# OpenShift cluste
+# Write only major version
+openshift_version: 4.10.0
+
+# OpenShift config locate directory 
+openshift_config_directory: "{{ root_dir }}/ocp4"
+
+# OpenShift cli version
+openshift_client: openshift-client-linux-4.10.9.tar.gz
+openshift_install: openshift-install-linux-4.10.9.tar.gz
+
+# OpenShift SDN Service Network
+service_network: 172.30.0.0/16
+pod_network: 10.128.0.0/14
+network_type: OpenShiftSDN
+
+# mirror registry url
+mirror_registry: registry.ocp.buahn.local:5000/ocp410/ocp4.10.9
+
+# Private Docker Registry Certificate file name
+# must be locate in role/ignition/files/registry.crt
+cert_file: registry.crt
+
+# chrony server ip
+chrony_server: 
+  - 192.168.60.12
+
+# time zone
+timezone: Asia/Seoul
+
+# kubelet container log max size
+container_log_max_size: 500Mi
+container_log_max_size_config_enable: true

@@ -1,0 +1,29 @@
+---
+- name: configure bootstrap node
+  hosts: bootstrap
+  remote_user: core
+  vars_files:
+    - vars/node.yaml
+    - vars/httpd.yaml
+
+  tasks:
+    - name: run coreos installer
+      shell: "coreos-installer install --copy-network {{ bootstrap_node_blk  }} --ignition-url http://{{ bastion }}:{{ httpd_port }}/ocp4/bootstrap.ign --insecure-ignition"
+
+    - name: reboot
+      reboot:
+        reboot_timeout: 1
+      ignore_errors: yes
+
+- name: delete bootstrap known hosts
+  hosts: bastion
+  vars_files:
+    - vars/node.yaml
+
+  tasks:
+    - name: delete bootstrap known hosts
+      lineinfile:
+        path: ~/.ssh/known_hosts
+        state: absent
+        regexp: "{{ bootstrap }}"
+      

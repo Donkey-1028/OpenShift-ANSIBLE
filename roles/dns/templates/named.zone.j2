@@ -1,0 +1,35 @@
+$TTL 1D
+@       IN SOA  @ service.{{ sub_domain }}.{{ domain  }}.{{ TLD  }}. (
+                                        0       ; serial
+                                        1D      ; refresh
+                                        1H      ; retry
+                                        1W      ; expire
+                                        3H )    ; minimum
+
+; name servers - NS records
+        NS     service.{{ sub_domain }}.{{ domain  }}.{{ TLD  }}.
+
+; OpenShift Container Platform Cluster - A records
+{% for node in master %}
+master-{{ loop.index }}	IN	A	{{ node }}
+{% endfor %}
+
+{% for node in worker %}
+worker-{{ loop.index }}	IN	A	{{ node }}
+{% endfor %}
+
+{% for node in infra %}
+infra-{{ loop.index }}		IN	A	{{ node }}
+{% endfor %}
+
+bootstrap	IN	A	{{ bootstrap }}
+service		IN	A	{{ bastion }}
+registry	IN	A	{{ bastion }}
+
+; Registry DNS for Disconnected OpenShift
+;registry	IN	A	{{ bastion }}
+
+; OpenShift internal cluster IPs - A records
+api             IN      A	{{ bastion }}
+api-int		IN      A	{{ bastion }}
+*.apps          IN      A	{{ bastion }}

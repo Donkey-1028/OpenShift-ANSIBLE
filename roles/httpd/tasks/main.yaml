@@ -1,0 +1,30 @@
+---
+- name: Install HTTPD
+  yum:
+    name: httpd
+    state: present
+  notify: "Restart httpd"
+  when: httpd
+
+- name: Configure HTTPD
+  lineinfile:
+    path: /etc/httpd/conf/httpd.conf
+    state: present
+    regexp: '^Listen 80'
+    line: "Listen {{ httpd_port }}"
+  notify: "Restart httpd"
+  when: httpd
+
+- name: Create OCP Directory
+  file:
+    path: /var/www/html/ocp4
+    state: directory
+    mode: 0755
+  when: httpd
+ 
+- name: Enabled And Start HTTPD
+  service:
+    name: httpd
+    state: started
+    enabled: true
+  when: httpd

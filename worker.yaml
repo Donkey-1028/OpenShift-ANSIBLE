@@ -1,0 +1,44 @@
+---
+- name: configure worker node
+  hosts: worker
+  remote_user: core
+  vars_files:
+    - vars/node.yaml
+    - vars/httpd.yaml
+  tasks:
+    - name: run coreos installer
+      shell: "coreos-installer install --copy-network {{ worker_node_blk  }} --ignition-url http://{{ bastion }}:{{ httpd_port }}/ocp4/worker.ign --insecure-ignition"
+
+- name: configure infra node
+  hosts: infra
+  remote_user: core
+  vars_files:
+    - vars/node.yaml
+    - vars/httpd.yaml
+  tasks:
+    - name: run coreos installer
+      shell: "coreos-installer install --copy-network {{ infra_node_blk  }} --ignition-url http://{{ bastion }}:{{ httpd_port }}/ocp4/worker.ign --insecure-ignition"
+
+- name: reboot
+  hosts: worker,infra
+  remote_user: core
+  tasks:
+    - name: reboot
+      reboot:        
+        reboot_timeout: 1
+      ignore_errors: yes
+
+- name: delete worker known hosts
+  hosts: bastion
+  vars_files:
+    - vars/node.yaml
+
+  tasks:
+    - name: delete worker known hosts
+      lineinfile:
+        path: ~/.ssh/known_hosts
+        state: absent
+        regexp: "{{ item }}"
+      loop:
+        - "{{ worker }}"
+        - "{{ infra }}"

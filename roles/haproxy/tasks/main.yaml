@@ -1,0 +1,22 @@
+---
+- name: Install HAProxy
+  yum:
+    name: haproxy
+    state: present
+  when: haproxy
+
+- name: Copy Template  HAProxy Config
+  template:
+    src: ../templates/haproxy.cfg.j2
+    dest: /etc/haproxy/haproxy.cfg
+  notify:
+  - Restart haproxy
+  when: haproxy
+     
+- name: Enabled And Start HAProxy
+  service:
+    name: haproxy
+    state: started
+    enabled: true
+  when: haproxy
+

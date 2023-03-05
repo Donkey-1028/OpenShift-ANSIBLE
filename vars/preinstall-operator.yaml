@@ -1,0 +1,2 @@
+origin_mirror_registry_url: registry.buahn.ocp.com:5000
+mirror_registry_url: registry.ocp.buahn.local:5000

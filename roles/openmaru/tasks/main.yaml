@@ -1,0 +1,29 @@
+---
+- name: create openmaru system agent namespace
+  shell: "/usr/local/bin/oc new-project {{ openmaru_sys_agent_namespace }}"
+  ignore_errors: true
+
+- name: openshift scc add to default serviceaccount
+  shell: "/usr/local/bin/oc adm policy add-scc-to-user privileged -z default -n {{ openmaru_sys_agent_namespace }}"
+
+- name: create openmaru config directory
+  file:
+    path: "{{ openshift_config_directory }}/openmaru"
+    recurse: yes
+    state: directory
+
+- name: template openmaru sys agent daemonset
+  template:
+    src: openmaru-sys-agent-with-master.yaml
+    dest: "{{ openshift_config_directory }}/openmaru/openmaru-sys-agent.yaml"
+  when: openmaru_sys_agent_deploy_master
+
+- name: template openmaru sys agent daemonset
+  template:
+    src: openmaru-sys-agent.yaml
+    dest: "{{ openshift_config_directory }}/openmaru/openmaru-sys-agent.yaml"
+  when: not openmaru_sys_agent_deploy_master
+
+- name: openmaru sys agent deploy
+  shell: "/usr/local/bin/oc create -f {{ openshift_config_directory }}/openmaru/openmaru-sys-agent.yaml --save-config"
+

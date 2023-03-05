@@ -1,0 +1,26 @@
+$TTL 1D
+@       IN SOA  @ service.{{ sub_domain }}.{{ domain  }}.{{ TLD }}. (
+                                        0       ; serial
+                                        1D      ; refresh
+                                        1H      ; retry
+                                        1W      ; expire
+                                        3H )    ; minimum
+; name servers - NS records
+        NS     service.{{ sub_domain }}.{{ domain  }}.{{ TLD }}.
+
+; OpenShift Container Platform Cluster - PTR records
+{{ bastion.split('.')[3] }}	IN	PTR	api.{{ sub_domain }}.{{ domain  }}.{{ TLD }}.
+{{ bastion.split('.')[3] }}	IN	PTR	api-int.{{ sub_domain }}.{{ domain  }}.{{ TLD }}.
+{{ bootstrap.split('.')[3] }}	IN	PTR	bootstrap.{{ sub_domain }}.{{ domain  }}.{{ TLD }}.
+
+{% for node in master %}
+{{ node.split('.')[3] }}	IN	PTR	master-{{ loop.index }}.{{ sub_domain }}.{{ domain  }}.{{ TLD }}.
+{% endfor %}
+
+{% for node in infra %}
+{{ node.split('.')[3] }}	IN	PTR	infra-{{ loop.index }}.{{ sub_domain }}.{{ domain  }}.{{ TLD }}.
+{% endfor %}
+
+{% for node in worker %}
+{{  node.split('.')[3] }}	IN	PTR	worker-{{ loop.index }}.{{ sub_domain }}.{{ domain  }}.{{ TLD }}.
+{% endfor %}

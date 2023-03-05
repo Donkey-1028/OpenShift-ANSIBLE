@@ -1,0 +1,8 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: kcb-redhat-operator-index
+  namespace: openshift-marketplace
+spec:
+  image: registry.buahn.ocp.com:5000/operatorhub410/operator-operatorhub-kcb-redhat-operator-index:v4.10
+  sourceType: grpc

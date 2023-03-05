@@ -1,0 +1,155 @@
+---
+- name: Unarhcive OpenShift files
+  unarchive:
+    src: "files/{{ item }}"
+    dest: /usr/local/bin
+  loop:
+    - "{{ openshift_client }}"
+    - "{{ openshift_install }}"
+
+- name: Add oc completion bash
+  shell: /usr/local/bin/oc completion bash >> /etc/bash_completion.d/oc_completion_bash
+
+- name: Make OpenShift Config Directory
+  file:
+    path: "{{ openshift_config_directory }}/install_dir"
+    recurse: yes
+    state: directory
+
+- name: check if ssh-keygen already exists
+  stat:
+    path: /root/.ssh/id_rsa
+  register: ssh_keygen_result
+
+- name: Create SSH Key
+  shell: |
+    ssh-keygen -t rsa -b 4096 -N '' -f /root/.ssh/id_rsa
+    eval "$(ssh-agent -s)"
+    ssh-add /root/.ssh/id_rsa
+  when: ssh_keygen_result.stat.exists  == false
+
+- name: Copy Pull Secret
+  template:
+    src: pull-secret.j2
+    dest: "{{ openshift_config_directory }}/pull-secret"
+
+- name: SSH Key Register
+  command: cat /root/.ssh/id_rsa.pub
+  register: sshKey   
+
+- name: Pull Secret Register
+  command: cat "{{ openshift_config_directory }}/pull-secret"
+  register: pullSecret
+
+- name: Private Docker Registry Certificate Register
+  command: sed 's/^/  /g' "{{ role_path }}/files/{{ cert_file }}"
+  register: registryCertificate
+
+- name: Create Install Config
+  template:
+    src: install-config.j2
+    dest: "{{ openshift_config_directory }}/install-config.yaml"
+    
+- name: Copy Install Config
+  copy:
+    src: "{{ openshift_config_directory }}/install-config.yaml"
+    dest: "{{ openshift_config_directory }}/install_dir/install-config.yaml"
+
+- name: Create OpenShift Manifest
+  command: /usr/local/bin/openshift-install create manifests --dir=./
+  args:
+    chdir: "{{ openshift_config_directory }}/install_dir"
+ 
+- name: Modify masterSchedulable
+  lineinfile:
+    path: "{{ openshift_config_directory }}/install_dir/manifests/cluster-scheduler-02-config.yml"
+    regexp: 'mastersSchedulable'
+    line: '  mastersSchedulable: false'
+
+- name: Make OpenShift Chrony Config Directory
+  file:
+    path: "{{ openshift_config_directory }}/chrony"
+    recurse: yes
+    state: directory
+
+- name: Copy chrony config file
+  template:
+    src: chrony.j2
+    dest: "{{ openshift_config_directory }}/chrony/99-{{ item }}-chrony-configuration.bu"
+  with_items:
+    - master
+    - worker
+
+- name: Make chrony machine config
+  command: "{{ role_path  }}/files/butane {{ openshift_config_directory }}/chrony/99-{{ item }}-chrony-configuration.bu -o {{ openshift_config_directory }}/chrony/99-{{ item }}-chrony-configuration.yaml"
+  with_items:
+    - master
+    - worker
+
+- name: Copy chrony machine config yaml
+  copy:
+    src: "{{ openshift_config_directory }}/chrony/{{ item }}"
+    dest: "{{ openshift_config_directory }}/install_dir/openshift/{{ item }}"
+  loop:
+    - "99-master-chrony-configuration.yaml"
+    - "99-worker-chrony-configuration.yaml"
+
+- name: Make OpenShift Timezone Config Directory
+  file:
+    path: "{{ openshift_config_directory }}/timezone"
+    recurse: yes
+    state: directory
+
+- name: Copy timezone config file
+  template:
+    src: timezone.j2
+    dest: "{{ openshift_config_directory }}/timezone/99-{{ item }}-timezone-configuration.bu"
+  with_items:
+    - master
+    - worker
+
+- name: Make timezone machine config
+  command: "{{ role_path  }}/files/butane {{ openshift_config_directory }}/timezone/99-{{ item }}-timezone-configuration.bu -o {{ openshift_config_directory }}/timezone/99-{{ item }}-timezone-configuration.yaml"
+  with_items:
+    - master
+    - worker
+
+- name: Copy timezone machine config yaml
+  copy:
+    src: "{{ openshift_config_directory }}/timezone/{{ item }}"
+    dest: "{{ openshift_config_directory }}/install_dir/openshift/{{ item }}"
+  loop:
+    - "99-master-timezone-configuration.yaml"
+    - "99-worker-timezone-configuration.yaml"
+
+- name: Make containerLogMaxSize kubelet config yaml
+  template:
+    src: container-log-max-size.j2
+    dest: "{{ openshift_config_directory }}/install_dir/openshift/99_openshift-machineconfig_99-container-log-max-size.yaml"
+  when: container_log_max_size_config_enable
+
+- name: Generate Ignition Config Files
+  command: /usr/local/bin/openshift-install create ignition-configs --dir=./
+  args:
+    chdir: "{{ openshift_config_directory }}/install_dir"
+
+- name: Copy Ignition Config files
+  copy:
+    src: "{{ openshift_config_directory }}/install_dir/{{ item }}"
+    dest: /var/www/html/ocp4
+    mode: 0777
+  loop:
+    - master.ign
+    - worker.ign
+    - bootstrap.ign
+  notify: "Restart httpd"
+
+- name: Create kube config dir
+  file:
+    path: ~/.kube
+    state: directory
+  
+- name: Copy kube config
+  copy:
+    src: "{{ openshift_config_directory }}/install_dir/auth/kubeconfig"
+    dest: ~/.kube/config
